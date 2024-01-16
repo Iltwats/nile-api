@@ -1,8 +1,10 @@
 require 'rails_helper'
 
 describe "Books API", type: :request do
-  let(:first_author){FactoryBot.create(:author, first_name:'Geroge',last_name:'Michale',age:43)}
-  let(:second_author){FactoryBot.create(:author, first_name:'Barrack',last_name:'Obama',age:23)}
+
+  let(:first_author) { FactoryBot.create(:author, first_name:'George',last_name:'Michale',age:43) }
+  let(:second_author) { FactoryBot.create(:author, first_name:'Barrack',last_name:'Obama',age:23) }
+
   describe 'GET /books' do
     before do
       FactoryBot.create(:book, title:"1984", author:first_author)
@@ -17,6 +19,40 @@ describe "Books API", type: :request do
       get '/api/v1/books'
 
       expect(response_body.size).to eq(2)
+    end
+
+    it 'returns a subset of books based on limits' do
+      get '/api/v1/books', params: {limit: 1}
+
+      expect(response).to have_http_status(:success)
+      expect(response_body.size).to eq(1)
+      expect(response_body).to eq(
+        [
+          {
+            'id' => 1,
+            'title' => '1984',
+            'author_name' => 'George Michale',
+            'author_age' => 43
+          }
+        ]
+      )
+    end
+
+    it 'returns a subset of books based on limits and offset' do
+      get '/api/v1/books', params: {limit: 1, offset: 1}
+
+      expect(response).to have_http_status(:success)
+      expect(response_body.size).to eq(1)
+      expect(response_body).to eq(
+        [
+          {
+            'id' => 2,
+            'title' => '1982',
+            'author_name' => 'Barrack Obama',
+            'author_age' => 23
+          }
+        ]
+      )
     end
   end
 
